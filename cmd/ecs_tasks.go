@@ -27,7 +27,9 @@ var ecsTasksCmd = &cobra.Command{
 func init() {
 	ecsTasksCmd.Flags().StringVarP(&ecsTasksCluster, "cluster", "c", "default", "ECS cluster name")
 	ecsTasksCmd.Flags().StringVarP(&ecsTasksService, "service", "s", "", "ECS service name (required)")
-	ecsTasksCmd.MarkFlagRequired("service")
+	if err := ecsTasksCmd.MarkFlagRequired("service"); err != nil {
+		panic(fmt.Sprintf("failed to mark flag required: %v", err))
+	}
 	rootCmd.AddCommand(ecsTasksCmd)
 }
 

@@ -90,9 +90,15 @@ func printJSON(headers []string, rows [][]string) {
 
 func printCSV(headers []string, rows [][]string) {
 	w := csv.NewWriter(os.Stdout)
-	w.Write(headers)
+	if err := w.Write(headers); err != nil {
+		fmt.Fprintf(os.Stderr, "error writing CSV headers: %v\n", err)
+		return
+	}
 	for _, row := range rows {
-		w.Write(row)
+		if err := w.Write(row); err != nil {
+			fmt.Fprintf(os.Stderr, "error writing CSV row: %v\n", err)
+			return
+		}
 	}
 	w.Flush()
 }
