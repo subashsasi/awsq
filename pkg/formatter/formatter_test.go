@@ -8,6 +8,21 @@ import (
 	"testing"
 )
 
+func captureOutput(fn func()) string {
+	old := os.Stdout
+	r, w, _ := os.Pipe()
+	os.Stdout = w
+
+	fn()
+
+	_ = w.Close()
+	os.Stdout = old
+
+	var buf bytes.Buffer
+	_, _ = buf.ReadFrom(r)
+	return buf.String()
+}
+
 func TestPrintJSON(t *testing.T) {
 	headers := []string{"ID", "NAME", "STATE"}
 	rows := [][]string{
@@ -15,19 +30,9 @@ func TestPrintJSON(t *testing.T) {
 		{"i-456", "api-server", "stopped"},
 	}
 
-	// Capture stdout
-	old := os.Stdout
-	r, w, _ := os.Pipe()
-	os.Stdout = w
-
-	printJSON(headers, rows)
-
-	w.Close()
-	os.Stdout = old
-
-	var buf bytes.Buffer
-	buf.ReadFrom(r)
-	output := buf.String()
+	output := captureOutput(func() {
+		printJSON(headers, rows)
+	})
 
 	// Verify it's valid JSON
 	var result []map[string]string
@@ -57,19 +62,9 @@ func TestPrintCSV(t *testing.T) {
 		{"i-456", "api-server"},
 	}
 
-	// Capture stdout
-	old := os.Stdout
-	r, w, _ := os.Pipe()
-	os.Stdout = w
-
-	printCSV(headers, rows)
-
-	w.Close()
-	os.Stdout = old
-
-	var buf bytes.Buffer
-	buf.ReadFrom(r)
-	output := buf.String()
+	output := captureOutput(func() {
+		printCSV(headers, rows)
+	})
 
 	lines := strings.Split(strings.TrimSpace(output), "\n")
 	if len(lines) != 3 {
@@ -89,19 +84,9 @@ func TestPrintTable(t *testing.T) {
 		{"i-123", "web-server"},
 	}
 
-	// Capture stdout
-	old := os.Stdout
-	r, w, _ := os.Pipe()
-	os.Stdout = w
-
-	printTable(headers, rows)
-
-	w.Close()
-	os.Stdout = old
-
-	var buf bytes.Buffer
-	buf.ReadFrom(r)
-	output := buf.String()
+	output := captureOutput(func() {
+		printTable(headers, rows)
+	})
 
 	// Should contain header and data
 	if !strings.Contains(output, "ID") {
@@ -122,19 +107,9 @@ func TestPrintTableEmpty(t *testing.T) {
 	headers := []string{"ID", "NAME"}
 	var rows [][]string
 
-	// Capture stdout
-	old := os.Stdout
-	r, w, _ := os.Pipe()
-	os.Stdout = w
-
-	printTable(headers, rows)
-
-	w.Close()
-	os.Stdout = old
-
-	var buf bytes.Buffer
-	buf.ReadFrom(r)
-	output := buf.String()
+	output := captureOutput(func() {
+		printTable(headers, rows)
+	})
 
 	if !strings.Contains(output, "No resources found") {
 		t.Errorf("expected 'No resources found' for empty rows, got %q", output)
@@ -147,19 +122,9 @@ func TestPrintTableTruncation(t *testing.T) {
 		{"This is a very long description that should exceed the forty character column width limit set in the formatter"},
 	}
 
-	// Capture stdout
-	old := os.Stdout
-	r, w, _ := os.Pipe()
-	os.Stdout = w
-
-	printTable(headers, rows)
-
-	w.Close()
-	os.Stdout = old
-
-	var buf bytes.Buffer
-	buf.ReadFrom(r)
-	output := buf.String()
+	output := captureOutput(func() {
+		printTable(headers, rows)
+	})
 
 	// Should contain truncation character
 	if !strings.Contains(output, "…") {
