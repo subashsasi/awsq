@@ -45,7 +45,11 @@ jobs:
           GOARCH: ${{ matrix.goarch }}
         run: |
           go mod tidy
-          go build -ldflags="-s -w" -o ${{ matrix.name }} .
+          VERSION=${GITHUB_REF_NAME}
+          COMMIT=${GITHUB_SHA::7}
+          DATE=$(date -u +%Y-%m-%dT%H:%M:%SZ)
+          LDFLAGS="-s -w -X github.com/subashsasi/awsq/cmd.Version=${VERSION} -X github.com/subashsasi/awsq/cmd.CommitSHA=${COMMIT} -X github.com/subashsasi/awsq/cmd.BuildDate=${DATE}"
+          go build -ldflags="${LDFLAGS}" -o ${{ matrix.name }} .
 
       - name: Upload Release Asset
         uses: softprops/action-gh-release@v3

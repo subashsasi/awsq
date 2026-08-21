@@ -26,7 +26,7 @@ func init() {
 func runLambda(cmd *cobra.Command, args []string) error {
 	ctx := context.Background()
 
-	cfg, err := config.LoadDefaultConfig(ctx, config.WithRegion(region))
+	cfg, err := config.LoadDefaultConfig(ctx, GetAWSConfigOpts()...)
 	if err != nil {
 		return fmt.Errorf("unable to load AWS config: %w", err)
 	}

@@ -10,8 +10,9 @@ import (
 )
 
 var (
-	region string
-	output string
+	region  string
+	output  string
+	profile string
 )
 
 var rootCmd = &cobra.Command{
@@ -19,6 +20,7 @@ var rootCmd = &cobra.Command{
 	Short: "awsq — query AWS resources in human-readable format",
 	Long: `awsq is a fast, zero-setup CLI to query AWS resources without
 complex jq chains. Think 'kubectl get' but for all AWS services.`,
+	Version:           Version,
 	PersistentPreRunE: resolveRegion,
 }
 
@@ -33,6 +35,8 @@ func Execute() {
 func init() {
 	rootCmd.PersistentFlags().StringVarP(&region, "region", "r", "", "AWS region (defaults to AWS config/environment)")
 	rootCmd.PersistentFlags().StringVarP(&output, "output", "o", "table", "Output format: table, json, csv")
+	rootCmd.PersistentFlags().StringVarP(&profile, "profile", "p", "", "AWS profile from ~/.aws/credentials")
+	rootCmd.SetVersionTemplate("awsq {{.Version}}\n")
 }
 
 // resolveRegion determines the AWS region from flag, env, or AWS config.
@@ -53,14 +57,28 @@ func resolveRegion(cmd *cobra.Command, args []string) error {
 		return nil
 	}
 
-	// Try loading from ~/.aws/config (respects AWS_PROFILE)
-	cfg, err := config.LoadDefaultConfig(context.Background())
+	// Try loading from ~/.aws/config (respects --profile and AWS_PROFILE)
+	var opts []func(*config.LoadOptions) error
+	if profile != "" {
+		opts = append(opts, config.WithSharedConfigProfile(profile))
+	}
+	cfg, err := config.LoadDefaultConfig(context.Background(), opts...)
 	if err == nil && cfg.Region != "" {
 		region = cfg.Region
 		return nil
 	}
 
 	return fmt.Errorf("no AWS region found. Set one using:\n  --region / -r flag\n  AWS_DEFAULT_REGION environment variable\n  ~/.aws/config default region")
+}
+
+// GetAWSConfigOpts returns the config options for AWS SDK loading.
+func GetAWSConfigOpts() []func(*config.LoadOptions) error {
+	var opts []func(*config.LoadOptions) error
+	opts = append(opts, config.WithRegion(region))
+	if profile != "" {
+		opts = append(opts, config.WithSharedConfigProfile(profile))
+	}
+	return opts
 }
 
 // derefStr safely dereferences a string pointer
