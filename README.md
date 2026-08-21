@@ -1,6 +1,6 @@
 # awsq — Query AWS Resources Instantly
 
-A fast, zero-setup CLI to query AWS resources in human-readable format. Think `kubectl get` but for AWS.
+A fast, zero-setup CLI to query AWS resources in human-readable format.
 
 ## Why?
 
