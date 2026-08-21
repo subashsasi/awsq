@@ -1,0 +1,31 @@
+# Binary output
+awsq
+awsq.exe
+*.exe
+
+# Go build cache
+*.o
+*.a
+*.so
+
+# Test binary
+*.test
+
+# Go coverage
+*.out
+coverage.html
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Environment
+.env
+.env.local

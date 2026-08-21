@@ -1,9 +1,11 @@
 package cmd
 
 import (
+	"context"
 	"fmt"
 	"os"
 
+	"github.com/aws/aws-sdk-go-v2/config"
 	"github.com/spf13/cobra"
 )
 
@@ -17,6 +19,7 @@ var rootCmd = &cobra.Command{
 	Short: "awsq — query AWS resources in human-readable format",
 	Long: `awsq is a fast, zero-setup CLI to query AWS resources without
 complex jq chains. Think 'kubectl get' but for all AWS services.`,
+	PersistentPreRunE: resolveRegion,
 }
 
 // Execute runs the root command
@@ -28,8 +31,36 @@ func Execute() {
 }
 
 func init() {
-	rootCmd.PersistentFlags().StringVarP(&region, "region", "r", "us-east-1", "AWS region")
+	rootCmd.PersistentFlags().StringVarP(&region, "region", "r", "", "AWS region (defaults to AWS config/environment)")
 	rootCmd.PersistentFlags().StringVarP(&output, "output", "o", "table", "Output format: table, json, csv")
+}
+
+// resolveRegion determines the AWS region from flag, env, or AWS config.
+// If none found, it returns an error asking the user to specify one.
+func resolveRegion(cmd *cobra.Command, args []string) error {
+	// If user explicitly passed --region, use it
+	if region != "" {
+		return nil
+	}
+
+	// Check AWS_DEFAULT_REGION and AWS_REGION env vars
+	if r := os.Getenv("AWS_DEFAULT_REGION"); r != "" {
+		region = r
+		return nil
+	}
+	if r := os.Getenv("AWS_REGION"); r != "" {
+		region = r
+		return nil
+	}
+
+	// Try loading from ~/.aws/config (respects AWS_PROFILE)
+	cfg, err := config.LoadDefaultConfig(context.Background())
+	if err == nil && cfg.Region != "" {
+		region = cfg.Region
+		return nil
+	}
+
+	return fmt.Errorf("no AWS region found. Set one using:\n  --region / -r flag\n  AWS_DEFAULT_REGION environment variable\n  ~/.aws/config default region")
 }
 
 // derefStr safely dereferences a string pointer

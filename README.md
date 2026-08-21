@@ -68,8 +68,19 @@ awsq <resource> [flags]
 
 | Flag | Short | Default | Description |
 |------|-------|---------|-------------|
-| `--region` | `-r` | `us-east-1` | AWS region |
+| `--region` | `-r` | auto-detect | AWS region |
 | `--output` | `-o` | `table` | Output format: table, json, csv |
+
+### Region Resolution
+
+`awsq` automatically detects your AWS region (no need to pass `-r` every time):
+
+1. `--region` / `-r` flag (highest priority)
+2. `AWS_DEFAULT_REGION` environment variable
+3. `AWS_REGION` environment variable
+4. `~/.aws/config` default region (respects `AWS_PROFILE`)
+
+If no region is found, `awsq` will ask you to specify one.
 
 ## Supported Resources
 
