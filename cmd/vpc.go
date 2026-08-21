@@ -3,6 +3,7 @@ package cmd
 import (
 	"context"
 	"fmt"
+	"strings"
 
 	"github.com/aws/aws-sdk-go-v2/config"
 	"github.com/aws/aws-sdk-go-v2/service/ec2"
@@ -11,16 +12,20 @@ import (
 	"github.com/subashsasi/awsq/pkg/formatter"
 )
 
+var vpcFilter string
+
 var vpcCmd = &cobra.Command{
 	Use:   "vpc",
 	Short: "List VPCs",
 	Example: `  awsq vpc
-  awsq vpc -r us-west-2
-  awsq vpc -o json`,
+  awsq vpc --filter default=yes
+  awsq vpc --filter name=prod-vpc
+  awsq vpc -r us-west-2 -o json`,
 	RunE: runVPC,
 }
 
 func init() {
+	vpcCmd.Flags().StringVarP(&vpcFilter, "filter", "f", "", "Filters: default=yes,name=prod-vpc")
 	rootCmd.AddCommand(vpcCmd)
 }
 
@@ -59,6 +64,9 @@ func runVPC(cmd *cobra.Command, args []string) error {
 		}
 	}
 
+	// Parse filters
+	filters := parseGenericFilters(vpcFilter)
+
 	headers := []string{"VPC_ID", "NAME", "CIDR", "STATE", "DEFAULT", "SUBNETS"}
 	var rows [][]string
 
@@ -69,6 +77,14 @@ func runVPC(cmd *cobra.Command, args []string) error {
 		isDefault := "No"
 		if vpc.IsDefault != nil && *vpc.IsDefault {
 			isDefault = "Yes"
+		}
+
+		// Apply client-side filters
+		if v, ok := filters["default"]; ok && !strings.EqualFold(isDefault, v) {
+			continue
+		}
+		if v, ok := filters["name"]; ok && !strings.EqualFold(name, v) {
+			continue
 		}
 
 		rows = append(rows, []string{

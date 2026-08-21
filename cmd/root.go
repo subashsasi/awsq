@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"os"
+	"strings"
 
 	"github.com/aws/aws-sdk-go-v2/config"
 	"github.com/spf13/cobra"
@@ -95,4 +96,20 @@ func derefInt32(v *int32) int32 {
 		return 0
 	}
 	return *v
+}
+
+// parseGenericFilters parses a "key=value,key2=value2" string into a map.
+func parseGenericFilters(filterStr string) map[string]string {
+	filters := make(map[string]string)
+	if filterStr == "" {
+		return filters
+	}
+	pairs := strings.Split(filterStr, ",")
+	for _, pair := range pairs {
+		parts := strings.SplitN(pair, "=", 2)
+		if len(parts) == 2 {
+			filters[parts[0]] = parts[1]
+		}
+	}
+	return filters
 }
