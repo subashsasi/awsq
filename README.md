@@ -181,6 +181,8 @@ sg-0def456    app-sg        vpc-111aaa    1              1               App ins
 
 ```bash
 awsq alb
+awsq alb --filter scheme=internet-facing
+awsq alb --filter type=application,vpc=vpc-123abc
 awsq alb -r us-west-2
 ```
 
@@ -188,6 +190,8 @@ awsq alb -r us-west-2
 
 ```bash
 awsq rds
+awsq rds --filter engine=postgres
+awsq rds --filter status=available,multi_az=yes
 awsq rds -o json
 ```
 
@@ -204,6 +208,8 @@ prod-db         postgres  15.3     db.r6g.xlarge  available  Yes       200      
 
 ```bash
 awsq lambda
+awsq lambda --filter runtime=python3.12
+awsq lambda --filter prefix=payment
 awsq lambda -r us-west-2
 ```
 
@@ -211,6 +217,8 @@ awsq lambda -r us-west-2
 
 ```bash
 awsq vpc
+awsq vpc --filter default=no
+awsq vpc --filter name=prod-vpc
 ```
 
 Output:
@@ -223,10 +231,21 @@ vpc-222bbb    default          172.31.0.0/16  available  Yes      3
 (2 VPCs)
 ```
 
+### S3 Buckets
+
+```bash
+awsq s3
+awsq s3 --filter prefix=prod
+awsq s3 --filter prefix=logs-
+awsq s3 -o json
+```
+
 ### Secrets Manager
 
 ```bash
 awsq secrets
+awsq secrets --filter prefix=prod/
+awsq secrets --filter rotation=enabled
 awsq secrets -o json
 ```
 
