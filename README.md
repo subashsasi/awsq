@@ -69,7 +69,9 @@ awsq <resource> [flags]
 | Flag | Short | Default | Description |
 |------|-------|---------|-------------|
 | `--region` | `-r` | auto-detect | AWS region |
+| `--profile` | `-p` | default | AWS profile from ~/.aws/credentials |
 | `--output` | `-o` | `table` | Output format: table, json, csv |
+| `--version` | | | Print version |
 
 ### Region Resolution
 
@@ -81,6 +83,35 @@ awsq <resource> [flags]
 4. `~/.aws/config` default region (respects `AWS_PROFILE`)
 
 If no region is found, `awsq` will ask you to specify one.
+
+### Profile Support
+
+Use `--profile` / `-p` to switch between AWS accounts/credentials:
+
+```bash
+awsq ec2                       # uses [default] profile
+awsq ec2 -p prod              # uses [prod] profile
+awsq ec2 --profile staging    # uses [staging] profile
+```
+
+Works with named profiles in `~/.aws/credentials`:
+
+```ini
+[default]
+aws_access_key_id = AKIA...
+aws_secret_access_key = ...
+
+[prod]
+aws_access_key_id = AKIA...
+aws_secret_access_key = ...
+```
+
+Also works with SSO profiles in `~/.aws/config`:
+
+```bash
+aws sso login --profile dev-sso    # authenticate first
+awsq ec2 -p dev-sso               # then query using that profile
+```
 
 ## Supported Resources
 

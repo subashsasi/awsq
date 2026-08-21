@@ -3,6 +3,7 @@ package cmd
 import (
 	"context"
 	"fmt"
+	"strings"
 
 	"github.com/aws/aws-sdk-go-v2/config"
 	"github.com/aws/aws-sdk-go-v2/service/s3"
@@ -10,15 +11,20 @@ import (
 	"github.com/subashsasi/awsq/pkg/formatter"
 )
 
+var s3Filter string
+
 var s3Cmd = &cobra.Command{
 	Use:   "s3",
 	Short: "List S3 buckets",
 	Example: `  awsq s3
+  awsq s3 --filter prefix=prod
+  awsq s3 --filter prefix=logs-
   awsq s3 -o json`,
 	RunE: runS3,
 }
 
 func init() {
+	s3Cmd.Flags().StringVarP(&s3Filter, "filter", "f", "", "Filters: prefix=prod")
 	rootCmd.AddCommand(s3Cmd)
 }
 
@@ -37,16 +43,34 @@ func runS3(cmd *cobra.Command, args []string) error {
 		return fmt.Errorf("failed to list buckets: %w", err)
 	}
 
+	// Parse prefix filter
+	var prefix string
+	if s3Filter != "" {
+		for _, pair := range strings.Split(s3Filter, ",") {
+			parts := strings.SplitN(pair, "=", 2)
+			if len(parts) == 2 && parts[0] == "prefix" {
+				prefix = parts[1]
+			}
+		}
+	}
+
 	headers := []string{"NAME", "CREATED"}
 	var rows [][]string
 
 	for _, bucket := range resp.Buckets {
+		name := derefStr(bucket.Name)
+
+		// Apply prefix filter (client-side)
+		if prefix != "" && !strings.HasPrefix(name, prefix) {
+			continue
+		}
+
 		created := "-"
 		if bucket.CreationDate != nil {
 			created = bucket.CreationDate.Format("2006-01-02 15:04")
 		}
 		rows = append(rows, []string{
-			derefStr(bucket.Name),
+			name,
 			created,
 		})
 	}
