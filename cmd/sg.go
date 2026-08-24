@@ -63,7 +63,7 @@ func runSG(cmd *cobra.Command, args []string) error {
 	}
 
 	formatter.Print(output, headers, rows)
-	fmt.Printf("\n(%d security groups)\n", len(rows))
+	printCount(len(rows), "security groups")
 	return nil
 }
 

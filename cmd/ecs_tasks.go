@@ -112,7 +112,7 @@ func runECSTasks(cmd *cobra.Command, args []string) error {
 	}
 
 	formatter.Print(output, headers, rows)
-	fmt.Printf("\n(%d tasks)\n", len(rows))
+	printCount(len(rows), "tasks")
 	return nil
 }
 

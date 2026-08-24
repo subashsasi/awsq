@@ -8,15 +8,27 @@ import (
 	"strings"
 )
 
-// Print outputs data in the specified format (table, json, csv)
+// Print outputs data in the specified format (table, json, csv, names)
 func Print(format string, headers []string, rows [][]string) {
 	switch format {
 	case "json":
 		printJSON(headers, rows)
 	case "csv":
 		printCSV(headers, rows)
+	case "names":
+		printNames(rows)
 	default:
 		printTable(headers, rows)
+	}
+}
+
+// printNames prints only the first column (identifier) of each row, one per
+// line, with no headers. Ideal for scripting and piping.
+func printNames(rows [][]string) {
+	for _, row := range rows {
+		if len(row) > 0 {
+			fmt.Println(row[0])
+		}
 	}
 }
 

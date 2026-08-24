@@ -68,7 +68,7 @@ func runEC2(cmd *cobra.Command, args []string) error {
 	}
 
 	formatter.Print(output, headers, rows)
-	fmt.Printf("\n(%d instances)\n", len(rows))
+	printCount(len(rows), "instances")
 	return nil
 }
 

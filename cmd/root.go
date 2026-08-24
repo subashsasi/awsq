@@ -40,7 +40,7 @@ func Execute() {
 
 func init() {
 	rootCmd.PersistentFlags().StringVarP(&region, "region", "r", "", "AWS region (defaults to AWS config/environment)")
-	rootCmd.PersistentFlags().StringVarP(&output, "output", "o", "table", "Output format: table, json, csv")
+	rootCmd.PersistentFlags().StringVarP(&output, "output", "o", "table", "Output format: table, json, csv, names")
 	rootCmd.PersistentFlags().StringVarP(&profile, "profile", "p", "", "AWS profile from ~/.aws/credentials")
 	rootCmd.SetVersionTemplate("awsq {{.Version}}\n")
 }
@@ -113,6 +113,14 @@ func derefInt32(v *int32) int32 {
 		return 0
 	}
 	return *v
+}
+
+// printCount prints the trailing summary line, but only for table output.
+// This keeps json, csv, and names output clean for piping to other tools.
+func printCount(count int, noun string) {
+	if output == "table" {
+		fmt.Printf("\n(%d %s)\n", count, noun)
+	}
 }
 
 // parseGenericFilters parses a "key=value,key2=value2" string into a map.

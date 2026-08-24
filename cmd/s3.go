@@ -73,6 +73,6 @@ func runS3(cmd *cobra.Command, args []string) error {
 	}
 
 	formatter.Print(output, headers, rows)
-	fmt.Printf("\n(%d buckets)\n", len(rows))
+	printCount(len(rows), "buckets")
 	return nil
 }

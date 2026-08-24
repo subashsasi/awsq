@@ -87,7 +87,7 @@ func runECS(cmd *cobra.Command, args []string) error {
 	}
 
 	formatter.Print(output, headers, rows)
-	fmt.Printf("\n(%d services in cluster '%s')\n", len(rows), ecsCluster)
+	printCount(len(rows), fmt.Sprintf("services in cluster '%s'", ecsCluster))
 	return nil
 }
 

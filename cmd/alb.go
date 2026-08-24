@@ -81,6 +81,6 @@ func runALB(cmd *cobra.Command, args []string) error {
 	}
 
 	formatter.Print(output, headers, rows)
-	fmt.Printf("\n(%d load balancers)\n", len(rows))
+	printCount(len(rows), "load balancers")
 	return nil
 }

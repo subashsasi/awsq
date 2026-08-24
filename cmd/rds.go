@@ -97,6 +97,6 @@ func runRDS(cmd *cobra.Command, args []string) error {
 	}
 
 	formatter.Print(output, headers, rows)
-	fmt.Printf("\n(%d databases)\n", len(rows))
+	printCount(len(rows), "databases")
 	return nil
 }
