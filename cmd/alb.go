@@ -1,11 +1,9 @@
 package cmd
 
 import (
-	"context"
 	"fmt"
 	"strings"
 
-	"github.com/aws/aws-sdk-go-v2/config"
 	elbv2 "github.com/aws/aws-sdk-go-v2/service/elasticloadbalancingv2"
 	"github.com/spf13/cobra"
 	"github.com/subashsasi/awsq/pkg/formatter"
@@ -29,12 +27,11 @@ func init() {
 }
 
 func runALB(cmd *cobra.Command, args []string) error {
-	ctx := context.Background()
-
-	cfg, err := config.LoadDefaultConfig(ctx, GetAWSConfigOpts()...)
+	cfg, ctx, cancel, err := newAWSConfig()
 	if err != nil {
-		return fmt.Errorf("unable to load AWS config: %w", err)
+		return err
 	}
+	defer cancel()
 
 	client := elbv2.NewFromConfig(cfg)
 

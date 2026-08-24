@@ -73,7 +73,8 @@ func printTable(headers []string, rows [][]string) {
 }
 
 func printJSON(headers []string, rows [][]string) {
-	var result []map[string]string
+	// Initialize as empty slice (not nil) so empty results marshal to [] not null
+	result := make([]map[string]string, 0, len(rows))
 	for _, row := range rows {
 		item := make(map[string]string)
 		for i, h := range headers {
@@ -84,7 +85,11 @@ func printJSON(headers []string, rows [][]string) {
 		result = append(result, item)
 	}
 
-	data, _ := json.MarshalIndent(result, "", "  ")
+	data, err := json.MarshalIndent(result, "", "  ")
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "error marshaling JSON: %v\n", err)
+		return
+	}
 	fmt.Println(string(data))
 }
 

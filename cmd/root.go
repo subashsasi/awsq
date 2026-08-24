@@ -5,10 +5,15 @@ import (
 	"fmt"
 	"os"
 	"strings"
+	"time"
 
+	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/config"
 	"github.com/spf13/cobra"
 )
+
+// awsTimeout is the maximum time allowed for AWS API operations per command.
+const awsTimeout = 30 * time.Second
 
 var (
 	region  string
@@ -80,6 +85,18 @@ func GetAWSConfigOpts() []func(*config.LoadOptions) error {
 		opts = append(opts, config.WithSharedConfigProfile(profile))
 	}
 	return opts
+}
+
+// newAWSConfig loads the AWS config (with resolved region/profile) and returns
+// a timeout-bound context for AWS operations. Callers must defer cancel().
+func newAWSConfig() (aws.Config, context.Context, context.CancelFunc, error) {
+	ctx, cancel := context.WithTimeout(context.Background(), awsTimeout)
+	cfg, err := config.LoadDefaultConfig(ctx, GetAWSConfigOpts()...)
+	if err != nil {
+		cancel()
+		return aws.Config{}, nil, nil, fmt.Errorf("unable to load AWS config: %w", err)
+	}
+	return cfg, ctx, cancel, nil
 }
 
 // derefStr safely dereferences a string pointer
