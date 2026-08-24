@@ -90,6 +90,6 @@ func runSecrets(cmd *cobra.Command, args []string) error {
 	}
 
 	formatter.Print(output, headers, rows)
-	fmt.Printf("\n(%d secrets)\n", len(rows))
+	printCount(len(rows), "secrets")
 	return nil
 }

@@ -95,7 +95,7 @@ func runVPC(cmd *cobra.Command, args []string) error {
 	}
 
 	formatter.Print(output, headers, rows)
-	fmt.Printf("\n(%d VPCs)\n", len(rows))
+	printCount(len(rows), "VPCs")
 	return nil
 }
 

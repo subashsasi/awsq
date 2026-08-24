@@ -77,6 +77,6 @@ func runLambda(cmd *cobra.Command, args []string) error {
 	}
 
 	formatter.Print(output, headers, rows)
-	fmt.Printf("\n(%d functions)\n", len(rows))
+	printCount(len(rows), "functions")
 	return nil
 }

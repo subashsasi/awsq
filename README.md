@@ -255,7 +255,24 @@ awsq secrets -o json
 awsq ec2 -o table    # Default: human-readable table
 awsq ec2 -o json     # JSON (pipe to jq for further processing)
 awsq ec2 -o csv      # CSV (import to spreadsheet)
+awsq ec2 -o names    # Just the identifiers, one per line (great for scripting)
 ```
+
+The `names` format prints only the first column (ID/name), one per line, with no
+headers or summary — perfect for piping into other commands:
+
+```bash
+# Get all bucket names
+awsq s3 -o names
+
+# Stop all stopped-then-listed instances
+awsq ec2 --filter state=stopped -o names | xargs aws ec2 start-instances --instance-ids
+
+# Count running instances
+awsq ec2 --filter state=running -o names | wc -l
+```
+
+Note: `json`, `csv`, and `names` output omit the trailing `(N items)` summary line so they stay clean for piping. Only `table` shows it.
 
 ## AWS Authentication
 
@@ -297,7 +314,7 @@ awsq/
 - [ ] `awsq ebs` — EBS volumes (attached/unattached)
 - [ ] `awsq logs` — CloudWatch Logs query
 - [ ] `awsq costs` — Current month cost breakdown
-- [ ] Multi-account support (`--profile`)
+- [x] Multi-account support (`--profile`)
 - [ ] Caching (avoid repeated API calls)
 - [ ] Watch mode (`awsq ec2 --watch`)
 
