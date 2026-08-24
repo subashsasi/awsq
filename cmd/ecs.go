@@ -1,10 +1,8 @@
 package cmd
 
 import (
-	"context"
 	"fmt"
 
-	"github.com/aws/aws-sdk-go-v2/config"
 	"github.com/aws/aws-sdk-go-v2/service/ecs"
 	"github.com/spf13/cobra"
 	"github.com/subashsasi/awsq/pkg/formatter"
@@ -26,12 +24,11 @@ func init() {
 }
 
 func runECS(cmd *cobra.Command, args []string) error {
-	ctx := context.Background()
-
-	cfg, err := config.LoadDefaultConfig(ctx, GetAWSConfigOpts()...)
+	cfg, ctx, cancel, err := newAWSConfig()
 	if err != nil {
-		return fmt.Errorf("unable to load AWS config: %w", err)
+		return err
 	}
+	defer cancel()
 
 	client := ecs.NewFromConfig(cfg)
 

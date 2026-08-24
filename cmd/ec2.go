@@ -1,11 +1,9 @@
 package cmd
 
 import (
-	"context"
 	"fmt"
 	"strings"
 
-	"github.com/aws/aws-sdk-go-v2/config"
 	"github.com/aws/aws-sdk-go-v2/service/ec2"
 	"github.com/aws/aws-sdk-go-v2/service/ec2/types"
 	"github.com/spf13/cobra"
@@ -31,12 +29,11 @@ func init() {
 }
 
 func runEC2(cmd *cobra.Command, args []string) error {
-	ctx := context.Background()
-
-	cfg, err := config.LoadDefaultConfig(ctx, GetAWSConfigOpts()...)
+	cfg, ctx, cancel, err := newAWSConfig()
 	if err != nil {
-		return fmt.Errorf("unable to load AWS config: %w", err)
+		return err
 	}
+	defer cancel()
 
 	client := ec2.NewFromConfig(cfg)
 	input := &ec2.DescribeInstancesInput{}
@@ -61,7 +58,7 @@ func runEC2(cmd *cobra.Command, args []string) error {
 					derefStr(inst.InstanceId),
 					getTagValue(inst.Tags, "Name"),
 					string(inst.InstanceType),
-					string(inst.State.Name),
+					getInstanceState(inst.State),
 					derefStr(inst.PrivateIpAddress),
 					derefStr(inst.PublicIpAddress),
 					getPlacementAZ(inst.Placement),
@@ -124,4 +121,11 @@ func getPlacementAZ(placement *types.Placement) string {
 		return "-"
 	}
 	return derefStr(placement.AvailabilityZone)
+}
+
+func getInstanceState(state *types.InstanceState) string {
+	if state == nil {
+		return "-"
+	}
+	return string(state.Name)
 }
